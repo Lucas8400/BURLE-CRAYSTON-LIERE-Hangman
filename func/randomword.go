@@ -1,4 +1,4 @@
-package func
+package main
 
 import (
 	"bufio"
