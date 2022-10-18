@@ -67,9 +67,7 @@ func Replace(word string, input string, index int) string {
 
 func (h *HangManData) Init() {
 	h.ToFind = RandomWord()
-	for range h.ToFind {
-		h.Word += "_"
-	}
+	h.Word = RevealLetter(h.ToFind)
 	h.Attempts = 10
 }
 
@@ -102,4 +100,24 @@ func RandomWord() string {
 	rand.Seed(time.Now().Unix())
 	mot := lines[rand.Intn(len(lines))]
 	return mot
+}
+
+func RevealLetter(word string) string {
+	index := len(word)/2 - 1
+	var letter1 string
+	var new_word string
+	for i, letter := range word {
+		if i == index {
+			letter1 += string(letter)
+		}
+	}
+	for _, letter := range word {
+		if string(letter) == letter1 {
+			new_word += string(letter)
+		} else {
+			new_word += "_"
+		}
+
+	}
+	return new_word
 }
