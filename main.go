@@ -3,9 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math/rand"
+	a "hangman-classic/fonctions"
 	"os"
-	"time"
+	"unicode"
 )
 
 type HangManData struct {
@@ -14,10 +14,38 @@ type HangManData struct {
 	Attempts int
 }
 
-func Scan() string {
+func (h *HangManData) Init() {
+	h.ToFind = a.RandomWord()
+	h.Word = a.RevealLetter(h.ToFind)
+	h.Attempts = 10
+}
+
+func (h *HangManData) Display() {
+	fmt.Println("Mot à trouver:", h.Word)
+	fmt.Println("Nombre d'essais restants:", h.Attempts)
+}
+
+func (h *HangManData) Scan() string {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	input := scanner.Text()
+	for _, letter := range input {
+		if len(input) == 1 && !unicode.IsLetter(letter) {
+			h.Display()
+			fmt.Println("Veuillez entrer une lettre !")
+			h.Scan()
+		}
+	}
+	if len(input) > 1 {
+		h.Display()
+		fmt.Println("Veuillez entrer une seule lettre !")
+		h.Scan()
+	}
+	if input == "" {
+		h.Display()
+		fmt.Println("Cette touche n'est pas disponible veuillez entrer une lettre !")
+		h.Scan()
+	}
 	return input
 }
 
@@ -25,23 +53,23 @@ func main() {
 	var hangman HangManData
 	hangman.Init()
 	for hangman.Attempts > 0 {
-		fmt.Println("Mot à trouver:", hangman.Word)
-		fmt.Println("Nombre d'essais restants:", hangman.Attempts)
+		hangman.Display()
 		fmt.Println("Entrez une lettre:")
-		input := Scan()
-		if VerifyLetter(input, hangman.ToFind) {
+		input := hangman.Scan()
+		if a.VerifyLetter(input, hangman.ToFind) {
+			fmt.Println("La lettre", input, "n'est pas dans le mot !")
 			hangman.Attempts--
 		}
 		var indexes []int
 		for index, letter := range hangman.ToFind {
 			if input == string(letter) {
-				if VerifyIndex(indexes, index) {
+				if a.VerifyIndex(indexes, index) {
 					indexes = append(indexes, index)
 				}
 			}
 		}
 		for _, index := range indexes {
-			hangman.Word = Replace(hangman.Word, input, index)
+			hangman.Word = a.Replace(hangman.Word, input, index)
 		}
 		if hangman.Word == hangman.ToFind {
 			fmt.Println("Bravo, vous avez trouvé le mot:", hangman.Word)
@@ -51,73 +79,4 @@ func main() {
 	if hangman.Attempts == 0 {
 		fmt.Println("Vous avez perdu, le mot était:", hangman.ToFind)
 	}
-}
-
-func Replace(word string, input string, index int) string {
-	var new_word string
-	for i, letter := range word {
-		if i == index {
-			new_word += input
-		} else {
-			new_word += string(letter)
-		}
-	}
-	return new_word
-}
-
-func (h *HangManData) Init() {
-	h.ToFind = RandomWord()
-	h.Word = RevealLetter(h.ToFind)
-	h.Attempts = 10
-}
-
-func VerifyLetter(input string, word string) bool {
-	for _, letter := range word {
-		if input == string(letter) {
-			return false
-		}
-	}
-	return true
-}
-
-func VerifyIndex(tab []int, index int) bool {
-	for _, element := range tab {
-		if index == element {
-			return false
-		}
-	}
-	return true
-}
-
-func RandomWord() string {
-	readFile, _ := os.Open("words.txt")
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
-	var lines []string
-	for fileScanner.Scan() {
-		lines = append(lines, fileScanner.Text())
-	}
-	rand.Seed(time.Now().Unix())
-	mot := lines[rand.Intn(len(lines))]
-	return mot
-}
-
-func RevealLetter(word string) string {
-	index := len(word)/2 - 1
-	var letter1 string
-	var new_word string
-	for i, letter := range word {
-		if i == index {
-			letter1 += string(letter)
-		}
-	}
-	for _, letter := range word {
-		if string(letter) == letter1 {
-			new_word += string(letter)
-		} else {
-			new_word += "_"
-		}
-
-	}
-	return new_word
 }
