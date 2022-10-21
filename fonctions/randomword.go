@@ -8,7 +8,10 @@ import (
 )
 
 func RandomWord() string {
-	readFile, _ := os.Open("words.txt")
+	readFile, err := os.Open("words.txt")
+	if err != nil {
+		panic(err)
+	}
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)
 	var lines []string

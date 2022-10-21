@@ -9,20 +9,26 @@ import (
 )
 
 type HangManData struct {
-	Word     string
-	ToFind   string
-	Attempts int
+	Word             string
+	ToFind           string
+	Attempts         int
+	HangManPositions []string
 }
 
 func (h *HangManData) Init() {
 	h.ToFind = a.RandomWord()
 	h.Word = a.RevealLetter(h.ToFind)
 	h.Attempts = 10
+	h.HangManPositions = a.HangmanTab()
 }
 
 func (h *HangManData) Display() {
 	fmt.Println("Mot à trouver:", h.Word)
 	fmt.Println("Nombre d'essais restants:", h.Attempts)
+}
+
+func (h *HangManData) DisplayHangMan() {
+	fmt.Println(h.HangManPositions[9-h.Attempts])
 }
 
 func (h *HangManData) Scan() string {
@@ -36,9 +42,19 @@ func (h *HangManData) Scan() string {
 			h.Scan()
 		}
 	}
-	if len(input) > 1 {
+	if len(input) > 1 && len(input) != len(h.ToFind) {
 		h.Display()
 		fmt.Println("Veuillez entrer une seule lettre !")
+		h.Scan()
+	}
+	if input == h.ToFind {
+		h.Word = h.ToFind
+		fmt.Println("Bravo, vous avez trouvé le mot:", h.Word)
+	} else if len(input) == len(h.ToFind) {
+		h.Attempts -= 2
+		fmt.Println("Ce n'est pas le mot !")
+		h.DisplayHangMan()
+		h.Display()
 		h.Scan()
 	}
 	if input == "" {
@@ -54,11 +70,12 @@ func main() {
 	hangman.Init()
 	for hangman.Attempts > 0 {
 		hangman.Display()
-		fmt.Println("Entrez une lettre:")
+		fmt.Println("Entrez une lettre ou un mot (-2 points si échec):")
 		input := hangman.Scan()
-		if a.VerifyLetter(input, hangman.ToFind) {
+		if a.VerifyLetter(input, hangman.ToFind) && len(input) == 1 {
 			fmt.Println("La lettre", input, "n'est pas dans le mot !")
 			hangman.Attempts--
+			hangman.DisplayHangMan()
 		}
 		var indexes []int
 		for index, letter := range hangman.ToFind {
