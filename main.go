@@ -13,6 +13,7 @@ type HangManData struct {
 	ToFind           string
 	Attempts         int
 	HangManPositions []string
+	UsedLetters      []string
 }
 
 func (h *HangManData) Init() {
